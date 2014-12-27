@@ -1,0 +1,11 @@
+---
+# apt mirror
+wheezy_server_base_mirror: http://ftp.de.debian.org/debian
+
+# firewll settings
+
+# external interface
+wheezy_server_base_ext_if: eth0
+
+# does it get its ip via dhcp?
+wheezy_server_base_ext_if_dhcp: 0

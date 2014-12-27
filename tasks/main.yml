@@ -1,0 +1,68 @@
+---
+
+# -----------------------------------------------------------------------------
+# setup apt sources
+# -----------------------------------------------------------------------------
+
+- name: set apt sources
+  register: apt_source
+  template: src=apt/sources.list.j2 dest=/etc/apt/sources.list owner=root group=root
+
+- name: update apt
+  action: apt update_cache=yes
+  when: apt_source|changed
+
+# -----------------------------------------------------------------------------
+# install firewall and setup ssh
+# -----------------------------------------------------------------------------
+
+- name: install security measures and services
+  apt: pkg={{item}} state=installed
+  with_items:
+    - fail2ban
+    - unattended-upgrades
+    - ntp
+
+# -----------------------------------------------------------------------------
+# install common tools
+# -----------------------------------------------------------------------------
+
+- name: install tools
+  apt: pkg={{item}} state=installed
+  with_items:
+    - htop
+    - ne
+    - iptraf
+    - sysstat
+    - rsync
+    - iperf
+    - hdparm
+    - dnsutils
+    - screen
+    - acl
+    - tree
+
+# -----------------------------------------------------------------------------
+# install firewall and setup ssh
+# -----------------------------------------------------------------------------
+
+- name: install default arno-iptables-firewall rules
+  file: owner=root group=root path=/etc/arno-iptables-firewall/conf.d state=directory
+
+- name: install setup arno-iptables-firewall rules
+  template: src=firewall/01setup.conf.j2 dest=/etc/arno-iptables-firewall/conf.d/01setup.conf owner=root group=root
+
+- name: install default arno-iptables-firewall rules
+  template: src=firewall/10ssh.conf.j2 dest=/etc/arno-iptables-firewall/conf.d/10ssh.conf owner=root group=root
+
+- name: install arno-iptables-firewall
+  apt: pkg=arno-iptables-firewall state=installed
+
+
+# -----------------------------------------------------------------------------
+# store boot log for better troubleshooting
+# -----------------------------------------------------------------------------
+
+- apt: pkg=bootlogd state=installed
+- lineinfile: dest=/etc/default/bootlogd regexp=^BOOTLOGD_ENABLE= line=BOOTLOGD_ENABLE=yes create=yes
+- lineinfile: dest=/etc/lsb-base-logging.sh regexp=^FANCYTTY= line=FANCYTTY=0 create=yes

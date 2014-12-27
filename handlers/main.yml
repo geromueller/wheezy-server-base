@@ -1,0 +1,5 @@
+---
+
+- name: restart arno-iptables-firewall
+  service: name=arno-iptables-firewall state=restarted
+ 
